@@ -1,0 +1,20 @@
+.node {
+  padding: 6px 8px;
+  min-width: 100px;
+  background: white;
+  border: 1px solid #888;
+  border-radius: 4px;
+  position: relative;
+  font-size: 13px;
+}
+
+.textarea {
+  width: 100%;
+  height: 48px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 13px;
+  background: transparent;
+  overflow: hidden;
+}

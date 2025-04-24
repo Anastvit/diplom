@@ -1,70 +1,67 @@
 export function buildGraph(edges) {
   return edges.reduce((acc, { source, target, data }) => {
-    const src = String(source);
-    const tgt = String(target);
+    const from = String(source);
+    const to = String(target);
     const type = data?.type || 'single';
-
-    acc[src] = acc[src] || [];
-    acc[src].push({ to: tgt, type });
+    acc[from] = acc[from] || [];
+    acc[from].push({ to, type });
     return acc;
   }, {});
 }
 
-export function generateRandomizedVariant(nodes, edges, rootId) {
+export function generateCombinatorialVariants(nodes, edges, rootId) {
   const labelMap = nodes.reduce((acc, node) => {
     acc[String(node.id)] = node.data.label?.trim() || '';
     return acc;
   }, {});
 
   const graph = buildGraph(edges);
-  const result = [];
+  const results = [];
 
   function dfs(currentId, path) {
     const children = graph[currentId] || [];
-
     if (children.length === 0) {
-      result.push([...path]);
+      results.push([...path]);
       return;
     }
 
-    const multiEdges = children.filter((e) => e.type === 'multi');
-    const singleEdges = children.filter((e) => e.type !== 'multi');
+    const multi = children.filter((e) => e.type === 'multi');
+    const single = children.filter((e) => e.type !== 'multi');
 
-    if (multiEdges.length > 0) {
-      const count = getRandomInt(1, multiEdges.length);
-      const selected = shuffleArray(multiEdges).slice(0, count);
-      const selectedTexts = selected.map((e) => labelMap[e.to]).filter(Boolean);
-
-      path.push(selectedTexts.join(', '));
-
-      dfs(selected[0].to, [...path]); // идём только по одному
+    if (multi.length > 0) {
+      const subsets = getNonEmptySubsets(multi);
+      subsets.forEach((subset) => {
+        const text = subset.map(e => labelMap[e.to]).join(', ');
+        const first = subset[0];
+        dfs(first.to, [...path, text]);
+      });
     }
 
-    if (singleEdges.length === 1) {
-      const next = singleEdges[0];
+    if (single.length === 1) {
+      const next = single[0];
       dfs(next.to, [...path, labelMap[next.to]]);
     }
 
-    if (singleEdges.length > 1) {
-      singleEdges.forEach((e) => {
+    if (single.length > 1) {
+      single.forEach((e) => {
         dfs(e.to, [...path, labelMap[e.to]]);
       });
     }
   }
 
   dfs(String(rootId), [labelMap[String(rootId)]]);
-  return result;
+  return results;
 }
 
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function shuffleArray(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = getRandomInt(0, i);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+function getNonEmptySubsets(arr) {
+  const result = [];
+  const total = 1 << arr.length;
+  for (let i = 1; i < total; i++) {
+    const subset = [];
+    for (let j = 0; j < arr.length; j++) {
+      if ((i >> j) & 1) subset.push(arr[j]);
+    }
+    result.push(subset);
   }
-  return arr;
+  return result;
 }

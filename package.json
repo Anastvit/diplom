@@ -16,6 +16,7 @@
     "@emotion/styled": "^11.11.5",
     "@mui/material": "^5.15.14",
     "jspdf": "^3.0.1",
+    "pdfmake": "^0.2.18",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.51.5",

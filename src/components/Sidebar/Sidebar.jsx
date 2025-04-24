@@ -1,32 +1,55 @@
-import jsPDF from 'jspdf';
+import pdfMake from 'pdfmake/build/pdfmake';
+import vfsFonts from 'pdfmake/build/vfs_fonts';
 import styles from './Sidebar.module.css';
 
-const Sidebar = ({ paths, nodes, onDownload }) => {
+pdfMake.vfs = vfsFonts.vfs;
+
+const Sidebar = ({ paths = [], nodes, onDownload }) => {
   const renderPath = (path) => path.join(' ');
 
   const handleDownloadPDF = () => {
-    const doc = new jsPDF();
-    doc.setFont('Helvetica');
-    doc.setFontSize(14);
-    doc.text('Сгенерированные задачи', 10, 10);
-    doc.setFontSize(12);
+    const content = paths.map((p, i) => ({
+      text: `${i + 1}. ${renderPath(p)}`,
+      margin: [0, 5, 0, 5],
+      fontSize: 12,
+    }));
 
-    let y = 20;
+    const docDefinition = {
+      content: [
+        { text: 'Сгенерированные задачи', style: 'header' },
+        ...content,
+      ],
+      styles: {
+        header: {
+          fontSize: 16,
+          bold: true,
+          margin: [0, 0, 0, 10],
+        },
+      },
+      defaultStyle: {
+        font: 'Roboto',
+      },
+      fonts: {
+        Roboto: {
+          normal: 'Roboto-Regular.ttf',
+          bold: 'Roboto-Medium.ttf',
+          italics: 'Roboto-Italic.ttf',
+          bolditalics: 'Roboto-MediumItalic.ttf',
+        },
+      },
+    };
 
-    paths.forEach((path, index) => {
-      const text = `${index + 1}. ${renderPath(path)}`;
-      const lines = doc.splitTextToSize(text, 180);
+    pdfMake.createPdf(docDefinition).download('задачи.pdf');
+  };
 
-      if (y + lines.length * 8 >= 280) {
-        doc.addPage();
-        y = 20;
-      }
-
-      doc.text(lines, 10, y);
-      y += lines.length * 8 + 4;
+  const handleDownloadJSON = () => {
+    const blob = new Blob([JSON.stringify(paths, null, 2)], {
+      type: 'application/json',
     });
-
-    doc.save('задачи.pdf');
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'задачи.json';
+    link.click();
   };
 
   return (
@@ -34,10 +57,10 @@ const Sidebar = ({ paths, nodes, onDownload }) => {
       <div className={styles.header}>
         <h3>Варианты задачи</h3>
         <div className={styles.buttons}>
-          <button onClick={onDownload} className={styles.saveButton}>
+          <button className={styles.saveButton} onClick={handleDownloadJSON}>
             Сохранить JSON
           </button>
-          <button onClick={handleDownloadPDF} className={styles.saveButton}>
+          <button className={styles.saveButton} onClick={handleDownloadPDF}>
             Сохранить PDF
           </button>
         </div>

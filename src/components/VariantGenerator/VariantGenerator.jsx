@@ -1,11 +1,11 @@
 import React from 'react';
-import { generateRandomizedVariant } from '../../utils/variantGenerator';
+import { generateCombinatorialVariants } from '../../utils/variantGenerator';
 import styles from './VariantGenerator.module.css';
 
 const VariantGenerator = ({ nodes, edges, rootId, onGenerate }) => {
   const handleClick = () => {
     if (!rootId) return;
-    const variants = generateRandomizedVariant(nodes, edges, rootId);
+    const variants = generateCombinatorialVariants(nodes, edges, rootId);
     onGenerate(variants);
   };
 

@@ -80,7 +80,7 @@ const Canvas = () => {
     };
 
     const newNode = {
-      id: String(Date.now()), // ← обязательно строка
+      id: String(Date.now()),
       type: 'element',
       position,
       data: { label: '' },
@@ -140,9 +140,19 @@ const Canvas = () => {
     };
   }, []);
 
+  const handleClearCanvas = () => {
+    const confirmed = window.confirm('Очистить весь холст? Это удалит все элементы.');
+    if (!confirmed) return;
+    setNodes([]);
+    setEdges([]);
+    setRootNodeId(null);
+    setPaths([]);
+  };
+
   return (
     <div className={styles.canvas} onDrop={onDrop} onDragOver={onDragOver}>
       <ReactFlow
+        key={nodes.length + edges.length} 
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -163,19 +173,28 @@ const Canvas = () => {
         onGenerate={setPaths}
       />
 
+      <button className={styles.clearButton} onClick={handleClearCanvas}>
+        Очистить холст
+      </button>
+
       <Sidebar
         paths={paths}
         nodes={nodes}
+        edges={edges}
+        rootId={rootNodeId}
+        onLoadTemplate={({ nodes, edges, rootId }) => {
+          setNodes(nodes);
+          setEdges(edges);
+          setRootNodeId(rootId);
+          setPaths([]);
+        }}
         onDownload={() => {
-          const json = paths.map((path) =>
-            path.map((id) => nodes.find((n) => String(n.id) === String(id))?.data.label || '')
-          );
-          const blob = new Blob([JSON.stringify(json, null, 2)], {
+          const blob = new Blob([JSON.stringify(paths, null, 2)], {
             type: 'application/json',
           });
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
-          link.download = 'paths.json';
+          link.download = 'задачи.json';
           link.click();
         }}
       />

@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import ReactFlow, {
   addEdge,
   applyNodeChanges,
@@ -7,52 +7,80 @@ import ReactFlow, {
   Controls,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+
 import NodeItem from '@components/NodeItem';
 import EdgeItem from '@components/EdgeItem';
 import ContextMenu from '@components/ContextMenu';
+import Sidebar from '@components/Sidebar';
+import VariantGenerator from '@components/VariantGenerator';
+
 import styles from './Canvas.module.css';
-
-const nodeTypes = {
-  element: NodeItem,
-};
-
-const edgeTypes = {
-  default: EdgeItem,
-};
 
 const Canvas = () => {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
-  const [edgeContextMenu, setEdgeContextMenu] = useState({ visible: false, x: 0, y: 0, edgeId: null });
+  const [paths, setPaths] = useState([]);
+  const [rootNodeId, setRootNodeId] = useState(null);
+  const [edgeContextMenu, setEdgeContextMenu] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    edgeId: null,
+  });
+
+  const nodeTypes = useMemo(
+    () => ({
+      element: (props) => <NodeItem {...props} isRoot={props.id === rootNodeId} />,
+    }),
+    [rootNodeId]
+  );
+
+  const edgeTypes = useMemo(() => ({ default: EdgeItem }), []);
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
     []
   );
+
   const onEdgesChange = useCallback(
     (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
     []
   );
+
   const onConnect = useCallback(
     (connection) =>
       setEdges((eds) =>
-        addEdge({ ...connection, data: { type: 'single' } }, eds)
+        addEdge(
+          {
+            ...connection,
+            source: String(connection.source),
+            target: String(connection.target),
+            data: { type: 'single' },
+          },
+          eds
+        )
       ),
     []
   );
 
   const onDrop = useCallback((event) => {
     event.preventDefault();
-    const reactFlowBounds = event.currentTarget.getBoundingClientRect();
-    const data = JSON.parse(event.dataTransfer.getData('application/reactflow'));
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const raw = event.dataTransfer.getData('application/reactflow');
+    if (!raw) return;
+    try {
+      JSON.parse(raw);
+    } catch {
+      return;
+    }
 
     const position = {
-      x: event.clientX - reactFlowBounds.left,
-      y: event.clientY - reactFlowBounds.top,
+      x: event.clientX - bounds.left,
+      y: event.clientY - bounds.top,
     };
 
     const newNode = {
-      id: `${+new Date()}`,
+      id: String(Date.now()), // ← обязательно строка
       type: 'element',
       position,
       data: { label: '' },
@@ -67,39 +95,48 @@ const Canvas = () => {
   };
 
   useEffect(() => {
-    const contextHandler = (e) => {
+    const handleEdgeContext = (e) => {
       const { id, x, y } = e.detail;
       setEdgeContextMenu({ visible: true, x, y, edgeId: id });
     };
 
-    const close = () => setEdgeContextMenu({ visible: false, x: 0, y: 0, edgeId: null });
-
-    const typeChangeHandler = (e) => {
+    const handleTypeChange = (e) => {
       const { id, type } = e.detail;
       setEdges((eds) =>
         eds.map((edge) =>
           edge.id === id ? { ...edge, data: { ...edge.data, type } } : edge
         )
       );
-      close();
+      setEdgeContextMenu({ visible: false, x: 0, y: 0, edgeId: null });
     };
 
-    const deleteHandler = (e) => {
+    const handleEdgeDelete = (e) => {
       const { id } = e.detail;
       setEdges((eds) => eds.filter((edge) => edge.id !== id));
-      close();
+      setEdgeContextMenu({ visible: false, x: 0, y: 0, edgeId: null });
     };
 
-    window.addEventListener('edge-context', contextHandler);
-    window.addEventListener('edge-type-change', typeChangeHandler);
-    window.addEventListener('edge-delete', deleteHandler);
-    window.addEventListener('click', close);
+    const handleMakeRoot = (e) => {
+      const { id } = e.detail;
+      setRootNodeId(String(id));
+    };
+
+    const handleClose = () => {
+      setEdgeContextMenu({ visible: false, x: 0, y: 0, edgeId: null });
+    };
+
+    window.addEventListener('edge-context', handleEdgeContext);
+    window.addEventListener('edge-type-change', handleTypeChange);
+    window.addEventListener('edge-delete', handleEdgeDelete);
+    window.addEventListener('make-root', handleMakeRoot);
+    window.addEventListener('click', handleClose);
 
     return () => {
-      window.removeEventListener('edge-context', contextHandler);
-      window.removeEventListener('edge-type-change', typeChangeHandler);
-      window.removeEventListener('edge-delete', deleteHandler);
-      window.removeEventListener('click', close);
+      window.removeEventListener('edge-context', handleEdgeContext);
+      window.removeEventListener('edge-type-change', handleTypeChange);
+      window.removeEventListener('edge-delete', handleEdgeDelete);
+      window.removeEventListener('make-root', handleMakeRoot);
+      window.removeEventListener('click', handleClose);
     };
   }, []);
 
@@ -119,8 +156,36 @@ const Canvas = () => {
         <Controls />
       </ReactFlow>
 
+      <VariantGenerator
+        nodes={nodes}
+        edges={edges}
+        rootId={rootNodeId || nodes[0]?.id}
+        onGenerate={setPaths}
+      />
+
+      <Sidebar
+        paths={paths}
+        nodes={nodes}
+        onDownload={() => {
+          const json = paths.map((path) =>
+            path.map((id) => nodes.find((n) => String(n.id) === String(id))?.data.label || '')
+          );
+          const blob = new Blob([JSON.stringify(json, null, 2)], {
+            type: 'application/json',
+          });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'paths.json';
+          link.click();
+        }}
+      />
+
       {edgeContextMenu.visible && (
-        <ContextMenu x={edgeContextMenu.x} y={edgeContextMenu.y} id={edgeContextMenu.edgeId} />
+        <ContextMenu
+          x={edgeContextMenu.x}
+          y={edgeContextMenu.y}
+          id={edgeContextMenu.edgeId}
+        />
       )}
     </div>
   );

@@ -2,49 +2,30 @@ import { BaseEdge, getBezierPath } from 'reactflow';
 import styles from './EdgeItem.module.css';
 
 const EdgeItem = ({
-  id,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  sourcePosition,
-  targetPosition,
-  data,
-  markerEnd,
+  id, sourceX, sourceY, targetX, targetY,
+  sourcePosition, targetPosition, data, markerEnd
 }) => {
-  const [edgePath] = getBezierPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-  });
-
+  const [path] = getBezierPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
   const edgeType = data?.type || 'single';
-
-  const stroke = edgeType === 'multi' ? '#007bff' : '#333';
-  const strokeWidth = edgeType === 'multi' ? 3 : 2;
-  const strokeDasharray = edgeType === 'multi' ? '5,5' : '0';
-
-  const handleContextMenu = (e) => {
+  const style = {
+    stroke: edgeType === 'multi' ? '#007bff' : '#333',
+    strokeWidth: edgeType === 'multi' ? 3 : 2,
+    strokeDasharray: edgeType === 'multi' ? '5,5' : '0',
+  };
+  const onCtx = e => {
     e.preventDefault();
-    const event = new CustomEvent('edge-context', {
+    window.dispatchEvent(new CustomEvent('edge-context', {
       detail: { id, x: e.clientX, y: e.clientY },
-    });
-    window.dispatchEvent(event);
+    }));
   };
 
-  return (
-    <>
-      <BaseEdge path={edgePath} markerEnd={markerEnd} style={{ stroke, strokeWidth, strokeDasharray }} />
-      <path
-        d={edgePath}
-        className={styles.interactionPath}
-        onContextMenu={handleContextMenu}
-      />
-    </>
-  );
+  return <>
+    <BaseEdge path={path} markerEnd={markerEnd} style={style} />
+    <path d={path}
+      className={styles.interactionPath}
+      onContextMenu={onCtx}
+    />
+  </>;
 };
 
 export default EdgeItem;

@@ -1,0 +1,79 @@
+.sidebar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 320px;
+  height: 100vh;
+  background-color: #f9f9f9;
+  border-left: 1px solid #ddd;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.header h3 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.saveButton {
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.saveButton:hover {
+  background: #0069d9;
+}
+
+.list {
+  flex-grow: 1;
+  overflow-y: auto;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 8px;
+}
+
+.item {
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  background-color: #fff;
+  border: 1px solid #e2e2e2;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.4;
+  transition: background-color 0.2s;
+}
+
+.item:hover {
+  background-color: #f0f8ff;
+}
+
+.empty {
+  font-style: italic;
+  color: #999;
+  margin-top: 20px;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+.item strong {
+  margin-right: 4px;
+}
+

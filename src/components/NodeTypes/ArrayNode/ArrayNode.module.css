@@ -1,0 +1,48 @@
+.node {
+  padding: 12px;
+  background: #ffffff;
+  border: 2px solid #17a2b8;
+  border-radius: 8px;
+  min-width: 180px;
+  font-size: 14px;
+  color: #222;
+  text-align: left;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-weight: bold;
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.group {
+  margin-bottom: 10px;
+}
+
+.group label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.group input,
+.group select {
+  width: 100%;
+  padding: 4px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.inline {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.verticalList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

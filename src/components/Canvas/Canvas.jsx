@@ -10,7 +10,10 @@ import 'reactflow/dist/style.css';
 
 import NodeItem from '@components/NodeItem';
 import EdgeItem from '@components/EdgeItem';
+import VariableNode from '@components/NodeTypes/VariableNode';
+import ArrayNode from '@components/NodeTypes/ArrayNode';
 import ContextMenu from '@components/ContextMenu';
+import NodeContextMenu from '@components/NodeContextMenu';
 import Sidebar from '@components/Sidebar';
 import VariantGenerator from '@components/VariantGenerator';
 
@@ -21,6 +24,7 @@ const Canvas = () => {
   const [edges, setEdges] = useState([]);
   const [paths, setPaths] = useState([]);
   const [rootNodeId, setRootNodeId] = useState(null);
+
   const [edgeContextMenu, setEdgeContextMenu] = useState({
     visible: false,
     x: 0,
@@ -28,9 +32,17 @@ const Canvas = () => {
     edgeId: null,
   });
 
+  const [nodeContextMenu, setNodeContextMenu] = useState({
+    x: 0,
+    y: 0,
+    nodeId: null,
+  });
+
   const nodeTypes = useMemo(
     () => ({
       element: (props) => <NodeItem {...props} isRoot={props.id === rootNodeId} />,
+      variable: VariableNode,
+      array: ArrayNode,
     }),
     [rootNodeId]
   );
@@ -68,12 +80,8 @@ const Canvas = () => {
     const bounds = event.currentTarget.getBoundingClientRect();
     const raw = event.dataTransfer.getData('application/reactflow');
     if (!raw) return;
-    try {
-      JSON.parse(raw);
-    } catch {
-      return;
-    }
 
+    const data = JSON.parse(raw);
     const position = {
       x: event.clientX - bounds.left,
       y: event.clientY - bounds.top,
@@ -81,9 +89,24 @@ const Canvas = () => {
 
     const newNode = {
       id: String(Date.now()),
-      type: 'element',
+      type: data.type,
       position,
-      data: { label: '' },
+      data: {
+        ...data.data,
+        onUpdate: (id, newCustom) => {
+          setNodes((nds) =>
+            nds.map((node) =>
+              node.id === id
+                ? { ...node, data: { ...node.data, custom: newCustom } }
+                : node
+            )
+          );
+        },
+        onContext: (e, id) => {
+          e.preventDefault();
+          setNodeContextMenu({ x: e.clientX, y: e.clientY, nodeId: id });
+        },
+      },
     };
 
     setNodes((nds) => nds.concat(newNode));
@@ -94,13 +117,52 @@ const Canvas = () => {
     event.dataTransfer.dropEffect = 'move';
   };
 
+  const handleClearCanvas = () => {
+    if (window.confirm('Очистить весь холст?')) {
+      setNodes([]);
+      setEdges([]);
+      setRootNodeId(null);
+      setPaths([]);
+    }
+  };
+
+  const handleNodeAction = (action, nodeId) => {
+    setNodeContextMenu({ x: 0, y: 0, nodeId: null });
+
+    if (action === 'delete') {
+      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+    }
+
+    if (action === 'makeRoot') {
+      setRootNodeId(nodeId);
+    }
+
+    if (action === 'duplicate') {
+      const node = nodes.find((n) => n.id === nodeId);
+      if (node) {
+        const newNode = {
+          ...node,
+          id: String(Date.now()),
+          position: { x: node.position.x + 40, y: node.position.y + 40 },
+        };
+        setNodes((nds) => [...nds, newNode]);
+      }
+    }
+  };
+
   useEffect(() => {
+    const closeMenus = () => {
+      setEdgeContextMenu({ visible: false, x: 0, y: 0, edgeId: null });
+      setNodeContextMenu({ x: 0, y: 0, nodeId: null });
+    };
+
     const handleEdgeContext = (e) => {
       const { id, x, y } = e.detail;
       setEdgeContextMenu({ visible: true, x, y, edgeId: id });
     };
 
-    const handleTypeChange = (e) => {
+    const handleEdgeTypeChange = (e) => {
       const { id, type } = e.detail;
       setEdges((eds) =>
         eds.map((edge) =>
@@ -116,43 +178,23 @@ const Canvas = () => {
       setEdgeContextMenu({ visible: false, x: 0, y: 0, edgeId: null });
     };
 
-    const handleMakeRoot = (e) => {
-      const { id } = e.detail;
-      setRootNodeId(String(id));
-    };
-
-    const handleClose = () => {
-      setEdgeContextMenu({ visible: false, x: 0, y: 0, edgeId: null });
-    };
-
+    window.addEventListener('click', closeMenus);
     window.addEventListener('edge-context', handleEdgeContext);
-    window.addEventListener('edge-type-change', handleTypeChange);
+    window.addEventListener('edge-type-change', handleEdgeTypeChange);
     window.addEventListener('edge-delete', handleEdgeDelete);
-    window.addEventListener('make-root', handleMakeRoot);
-    window.addEventListener('click', handleClose);
 
     return () => {
+      window.removeEventListener('click', closeMenus);
       window.removeEventListener('edge-context', handleEdgeContext);
-      window.removeEventListener('edge-type-change', handleTypeChange);
+      window.removeEventListener('edge-type-change', handleEdgeTypeChange);
       window.removeEventListener('edge-delete', handleEdgeDelete);
-      window.removeEventListener('make-root', handleMakeRoot);
-      window.removeEventListener('click', handleClose);
     };
   }, []);
-
-  const handleClearCanvas = () => {
-    const confirmed = window.confirm('Очистить весь холст? Это удалит все элементы.');
-    if (!confirmed) return;
-    setNodes([]);
-    setEdges([]);
-    setRootNodeId(null);
-    setPaths([]);
-  };
 
   return (
     <div className={styles.canvas} onDrop={onDrop} onDragOver={onDragOver}>
       <ReactFlow
-        key={nodes.length + edges.length} 
+        key={nodes.length + edges.length}
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -206,6 +248,13 @@ const Canvas = () => {
           id={edgeContextMenu.edgeId}
         />
       )}
+
+      <NodeContextMenu
+        x={nodeContextMenu.x}
+        y={nodeContextMenu.y}
+        nodeId={nodeContextMenu.nodeId}
+        onAction={handleNodeAction}
+      />
     </div>
   );
 };

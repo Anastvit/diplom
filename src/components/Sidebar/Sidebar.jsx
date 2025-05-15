@@ -41,7 +41,8 @@ const Sidebar = ({ paths = [], nodes, edges, rootId, onLoadTemplate, onDownload 
     setTemplates(Object.keys(all));
   };
 
-  const renderPath = (path) => path.join(' ');
+  const renderPath = (path) => path;
+
 
   const handleDownloadPDF = () => {
     const content = paths.map((p, i) => ({

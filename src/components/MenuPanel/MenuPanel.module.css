@@ -1,3 +1,42 @@
-.MenuPanel-component {
+.panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 220px;
+  height: 100vh;
+  background: #f8f9fa;
+  border-right: 1px solid #ccc;
+  padding: 16px;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  overflow-y: auto;
   display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.typeList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.typeButton {
+  padding: 10px;
+  border: 1px solid #ccc;
+  background: white;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: grab;
+  transition: background 0.2s;
+  text-align: center;
+}
+
+.typeButton:hover {
+  background: #e6f0ff;
 }

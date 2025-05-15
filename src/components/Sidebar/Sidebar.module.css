@@ -2,136 +2,181 @@
   position: absolute;
   top: 0;
   right: 0;
-  width: 320px;
+  width: 300px;
   height: 100vh;
-  background: #f9f9f9;
-  border-left: 1px solid #ddd;
+  background: #f8f9fb;
+  border-left: 1px solid #ccc;
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.04);
   padding: 16px;
-  box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
+  font-family: 'Segoe UI', sans-serif;
   z-index: 1000;
-  transition: all 0.2s ease;
 }
 
 .collapsed {
-  width: 40px !important;
-  padding: 10px 4px !important;
+  width: 48px;
+  padding: 8px;
   overflow: hidden;
-  background: #eaeaea;
+  align-items: center;
 }
 
-.toggleCollapse {
-  position: fixed;
-  top: 10px;
-  right: 320px;
-  z-index: 1100;
-  background: #007bff;
-  color: white;
-  border: none;
-  width: 32px;
-  height: 32px;
-  font-size: 18px;
-  border-radius: 4px 0 0 4px;
+.collapseButton {
+  position: absolute;
+  top: 50%;
+  left: -12px;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 36px;
+  background: #cfc9f9;
+  color: #4b46c5;
+  border-radius: 6px 0 0 6px;
+  border: 1px solid #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  z-index: 1010;
+  transition: background 0.2s ease;
 }
 
-.header h3 {
-  margin-bottom: 10px;
+.collapseButton:hover {
+  background: #b9b2f2;
+}
+
+.icon {
+  transform: rotate(0deg);
+  transition: transform 0.3s ease;
+}
+
+.iconFlipped {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.heading {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
 }
 
 .buttons {
   display: flex;
   gap: 8px;
+}
+
+.button {
+  background: #e2e6f0;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #333;
+}
+
+.button:hover {
+  background: #d0d4e2;
+}
+
+.templatePanel {
+  background: #f4f5fa;
+  border: 1px solid #d9dce5;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.templateControls {
+  display: flex;
+  gap: 8px;
   margin-bottom: 10px;
 }
 
-.saveButton {
+.templateSave {
+  background: #e2e6f0;
+  border: none;
+  border-radius: 6px;
   padding: 6px 12px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
   font-size: 13px;
   cursor: pointer;
+  color: #333;
+  flex-shrink: 0;
 }
 
-.saveButtonGreen {
-  margin-top: 6px;
-  padding: 6px 12px;
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.toggleTemplates {
-  background: transparent;
-  border: none;
-  color: #555;
-  font-size: 13px;
-  margin-top: 4px;
-  cursor: pointer;
-  text-align: left;
-}
-
-.templates {
-  margin-bottom: 12px;
+.templateSave:hover {
+  background: #d0d4e2;
 }
 
 .input {
-  width: 100%;
-  padding: 6px;
-  font-size: 14px;
-  margin-bottom: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.template {
-  text-align: left;
+  flex-grow: 1;
+  padding: 8px 10px;
   background: #ffffff;
   border: 1px solid #ccc;
-  padding: 4px 6px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 14px;
-  cursor: pointer;
-  margin-top: 4px;
+  color: #2d2d2d;
+  outline: none;
+  transition: border 0.2s ease, background 0.2s ease;
 }
 
-.template:hover {
-  background: #e2e6ea;
-}
-
-.list {
-  flex-grow: 1;
-  overflow-y: auto;
-}
-
-.item strong {
-  margin-right: 4px;
-}
-
-.empty {
-  font-style: italic;
-  color: #888;
+.input::placeholder {
+  color: #aaa;
 }
 
 .templateRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 4px;
+  margin-bottom: 6px;
 }
 
-.deleteButton {
+.template {
+  flex-grow: 1;
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.template:hover {
+  background: #eef2ff;
+}
+
+.delete {
   background: transparent;
   border: none;
-  color: #dc3545;
   font-size: 16px;
+  color: #dc3545;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0 6px;
 }
 
+.generated {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pathItem {
+  font-size: 13px;
+  color: #333;
+}
+
+.empty {
+  font-style: italic;
+  color: #888;
+  font-size: 13px;
+}

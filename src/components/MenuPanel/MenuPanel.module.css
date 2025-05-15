@@ -1,42 +1,47 @@
 .panel {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 220px;
-  height: 100vh;
-  background: #f8f9fa;
-  border-right: 1px solid #ccc;
+  top: 20px;
+  left: 20px;
+  width: 180px;
+  background: #f0f2f5;
+  border: 1px solid #ccc;
+  border-radius: 12px;
   padding: 16px;
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
-  z-index: 1000;
-  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+  align-items: center;
+  z-index: 1000;
 }
 
 .title {
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 15px;
+  font-weight: 600;
   margin-bottom: 12px;
+  color: #333;
 }
 
 .typeList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  width: 100%;
 }
 
 .typeButton {
-  padding: 10px;
-  border: 1px solid #ccc;
-  background: white;
-  border-radius: 4px;
-  font-size: 14px;
-  cursor: grab;
-  transition: background 0.2s;
   text-align: center;
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+  cursor: grab;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .typeButton:hover {
-  background: #e6f0ff;
+  background: #eaf3ff;
+  border-color: #a0c4ff;
 }

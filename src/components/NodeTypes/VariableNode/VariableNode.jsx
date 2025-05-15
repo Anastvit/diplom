@@ -14,8 +14,7 @@ const VariableNode = ({ data, id }) => {
 
   return (
     <div className={styles.node} onContextMenu={(e) => onContext?.(e, id)}>
-      <Handle type="target" position={Position.Left} />
-      <div className={styles.title}>🔢 Переменная</div>
+      <Handle type="target" position={Position.Left} className={styles.handle} />
 
       <div className={styles.group}>
         <label>Имя:</label>
@@ -73,7 +72,7 @@ const VariableNode = ({ data, id }) => {
         </div>
       )}
 
-      <Handle type="source" position={Position.Right} />
+      <Handle type="source" position={Position.Right} className={styles.handle} />
     </div>
   );
 };

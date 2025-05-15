@@ -24,7 +24,7 @@ const NodeItem = ({ id, data, isRoot }) => {
       <Handle
         type="target"
         position={Position.Left}
-        style={{ background: '#555', zIndex: 10 }}
+        className={styles.handle}
       />
 
       <textarea
@@ -38,7 +38,7 @@ const NodeItem = ({ id, data, isRoot }) => {
       <Handle
         type="source"
         position={Position.Right}
-        style={{ background: '#555', zIndex: 10 }}
+        className={styles.handle}
       />
     </div>
   );

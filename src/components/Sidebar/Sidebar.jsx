@@ -7,7 +7,6 @@ pdfMake.vfs = vfsFonts.vfs;
 
 const Sidebar = ({ paths = [], nodes, edges, rootId, onLoadTemplate, onDownload }) => {
   const [collapsed, setCollapsed] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(true);
   const [templateName, setTemplateName] = useState('');
   const [templates, setTemplates] = useState([]);
 
@@ -33,39 +32,26 @@ const Sidebar = ({ paths = [], nodes, edges, rootId, onLoadTemplate, onDownload 
   };
 
   const deleteTemplate = (name) => {
-    const confirmed = window.confirm(`Удалить шаблон "${name}"?`);
-    if (!confirmed) return;
+    if (!window.confirm(`Удалить шаблон "${name}"?`)) return;
     const all = JSON.parse(localStorage.getItem('templates') || '{}');
     delete all[name];
     localStorage.setItem('templates', JSON.stringify(all));
     setTemplates(Object.keys(all));
   };
 
-  const renderPath = (path) => path;
-
-
   const handleDownloadPDF = () => {
     const content = paths.map((p, i) => ({
-      text: `${i + 1}. ${renderPath(p)}`,
+      text: `${i + 1}. ${p}`,
       margin: [0, 5, 0, 5],
       fontSize: 12,
     }));
 
     const docDefinition = {
-      content: [
-        { text: 'Сгенерированные задачи', style: 'header' },
-        ...content,
-      ],
+      content: [{ text: 'Сгенерированные задачи', style: 'header' }, ...content],
       styles: {
-        header: {
-          fontSize: 16,
-          bold: true,
-          margin: [0, 0, 0, 10],
-        },
+        header: { fontSize: 16, bold: true, margin: [0, 0, 0, 10] },
       },
-      defaultStyle: {
-        font: 'Roboto',
-      },
+      defaultStyle: { font: 'Roboto' },
       fonts: {
         Roboto: {
           normal: 'Roboto-Regular.ttf',
@@ -79,44 +65,33 @@ const Sidebar = ({ paths = [], nodes, edges, rootId, onLoadTemplate, onDownload 
     pdfMake.createPdf(docDefinition).download('задачи.pdf');
   };
 
-  const handleDownloadJSON = () => {
-    const blob = new Blob([JSON.stringify(paths, null, 2)], {
-      type: 'application/json',
-    });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'задачи.json';
-    link.click();
-  };
-
   return (
     <div className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}>
-      <button className={styles.toggleCollapse} onClick={() => setCollapsed(!collapsed)}>
-        {collapsed ? '⇥' : '⇤'}
-      </button>
+      <div className={styles.collapseButton} onClick={() => setCollapsed(!collapsed)}>
+        <svg
+          className={collapsed ? styles.iconFlipped : styles.icon}
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="14"
+          height="14"
+        >
+          <path fill="currentColor" d="M15 6l-6 6 6 6" />
+        </svg>
+      </div>
 
       {!collapsed && (
         <>
-          <div className={styles.header}>
-            <h3>Варианты задачи</h3>
+          <div className={styles.section}>
+            <h3 className={styles.heading}>Варианты</h3>
             <div className={styles.buttons}>
-              <button className={styles.saveButton} onClick={handleDownloadJSON}>
-                Сохранить JSON
-              </button>
-              <button className={styles.saveButton} onClick={handleDownloadPDF}>
-                Сохранить PDF
-              </button>
+              <button className={styles.button} onClick={onDownload}>💾 JSON</button>
+              <button className={styles.button} onClick={handleDownloadPDF}>📄 PDF</button>
             </div>
-            <button
-              className={styles.toggleTemplates}
-              onClick={() => setShowTemplates((prev) => !prev)}
-            >
-              {showTemplates ? 'Скрыть шаблоны' : 'Показать шаблоны'}
-            </button>
           </div>
 
-          {showTemplates && (
-            <div className={styles.templates}>
+          <div className={styles.templatePanel}>
+            <h3 className={styles.heading}>📁 Шаблоны</h3>
+            <div className={styles.templateControls}>
               <input
                 className={styles.input}
                 type="text"
@@ -124,33 +99,36 @@ const Sidebar = ({ paths = [], nodes, edges, rootId, onLoadTemplate, onDownload 
                 value={templateName}
                 onChange={(e) => setTemplateName(e.target.value)}
               />
-              <button className={styles.saveButtonGreen} onClick={saveTemplate}>
+              <button className={styles.templateSave} onClick={saveTemplate}>
                 💾 Сохранить
               </button>
-              <div className={styles.list}>
-                {templates.map((t) => (
-                  <div key={t} className={styles.templateRow}>
-                    <button className={styles.template} onClick={() => loadTemplate(t)}>
-                      {t}
-                    </button>
-                    <button className={styles.deleteButton} onClick={() => deleteTemplate(t)}>
-                      🗑
-                    </button>
+            </div>
+
+            <div className={styles.list}>
+              {templates.map((t) => (
+                <div key={t} className={styles.templateRow}>
+                  <button className={styles.template} onClick={() => loadTemplate(t)}>
+                    {t}
+                  </button>
+                  <button className={styles.delete} onClick={() => deleteTemplate(t)}>
+                    🗑
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.section}>
+            {paths.length === 0 ? (
+              <p className={styles.empty}>Нет сгенерированных задач</p>
+            ) : (
+              <div className={styles.generated}>
+                {paths.map((p, i) => (
+                  <div key={i} className={styles.pathItem}>
+                    <strong>{i + 1}.</strong> {p}
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          <div className={styles.list}>
-            {paths.length === 0 ? (
-              <p className={styles.empty}>Ничего не найдено</p>
-            ) : (
-              paths.map((p, i) => (
-                <div key={i} className={styles.item}>
-                  <strong>{i + 1}.</strong> {renderPath(p)}
-                </div>
-              ))
             )}
           </div>
         </>

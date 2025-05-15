@@ -145,6 +145,13 @@ const Canvas = () => {
           ...node,
           id: String(Date.now()),
           position: { x: node.position.x + 40, y: node.position.y + 40 },
+          data: {
+            ...node.data,
+            onContext: (e, id) => {
+              e.preventDefault();
+              setNodeContextMenu({ x: e.clientX, y: e.clientY, nodeId: id });
+            },
+          },
         };
         setNodes((nds) => [...nds, newNode]);
       }
@@ -224,8 +231,19 @@ const Canvas = () => {
         nodes={nodes}
         edges={edges}
         rootId={rootNodeId}
-        onLoadTemplate={({ nodes, edges, rootId }) => {
-          setNodes(nodes);
+        onLoadTemplate={({ nodes: loadedNodes, edges, rootId }) => {
+          setNodes(
+            loadedNodes.map((node) => ({
+              ...node,
+              data: {
+                ...node.data,
+                onContext: (e, id) => {
+                  e.preventDefault();
+                  setNodeContextMenu({ x: e.clientX, y: e.clientY, nodeId: id });
+                },
+              },
+            }))
+          );
           setEdges(edges);
           setRootNodeId(rootId);
           setPaths([]);

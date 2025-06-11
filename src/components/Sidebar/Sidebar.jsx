@@ -65,32 +65,28 @@ const Sidebar = ({ paths = [], nodes, edges, rootId, onLoadTemplate, onDownload 
     pdfMake.createPdf(docDefinition).download('задачи.pdf');
   };
 
+  const handleGenerate = () => {
+    window.dispatchEvent(new CustomEvent('generate'));
+  };
+
+  const handleClear = () => {
+    window.dispatchEvent(new CustomEvent('clear-canvas'));
+  };
+
   return (
     <div className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}>
-      <div className={styles.collapseButton} onClick={() => setCollapsed(!collapsed)}>
-        <svg
-          className={collapsed ? styles.iconFlipped : styles.icon}
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          width="14"
-          height="14"
-        >
-          <path fill="currentColor" d="M15 6l-6 6 6 6" />
-        </svg>
-      </div>
-
       {!collapsed && (
         <>
           <div className={styles.section}>
-            <h3 className={styles.heading}>Варианты</h3>
+            <h4 className={styles.sectionTitle}>Варианты</h4>
             <div className={styles.buttons}>
-              <button className={styles.button} onClick={onDownload}>💾 JSON</button>
-              <button className={styles.button} onClick={handleDownloadPDF}>📄 PDF</button>
+              <button className={styles.button} onClick={onDownload}>JSON</button>
+              <button className={styles.button} onClick={handleDownloadPDF}>PDF</button>
             </div>
           </div>
 
-          <div className={styles.templatePanel}>
-            <h3 className={styles.heading}>📁 Шаблоны</h3>
+          <div className={styles.section}>
+            <h4 className={styles.sectionTitle}>Шаблоны</h4>
             <div className={styles.templateControls}>
               <input
                 className={styles.input}
@@ -99,37 +95,36 @@ const Sidebar = ({ paths = [], nodes, edges, rootId, onLoadTemplate, onDownload 
                 value={templateName}
                 onChange={(e) => setTemplateName(e.target.value)}
               />
-              <button className={styles.templateSave} onClick={saveTemplate}>
-                💾 Сохранить
-              </button>
+              <button className={styles.save} onClick={saveTemplate}>💾</button>
             </div>
-
-            <div className={styles.list}>
+            <div className={styles.templates}>
               {templates.map((t) => (
                 <div key={t} className={styles.templateRow}>
-                  <button className={styles.template} onClick={() => loadTemplate(t)}>
-                    {t}
-                  </button>
-                  <button className={styles.delete} onClick={() => deleteTemplate(t)}>
-                    🗑
-                  </button>
+                  <button className={styles.template} onClick={() => loadTemplate(t)}>{t}</button>
+                  <button className={styles.delete} onClick={() => deleteTemplate(t)}>🗑</button>
                 </div>
               ))}
             </div>
           </div>
 
           <div className={styles.section}>
+            <h4 className={styles.sectionTitle}>Результаты</h4>
             {paths.length === 0 ? (
-              <p className={styles.empty}>Нет сгенерированных задач</p>
+              <p className={styles.empty}>Ничего не сгенерировано</p>
             ) : (
               <div className={styles.generated}>
                 {paths.map((p, i) => (
-                  <div key={i} className={styles.pathItem}>
-                    <strong>{i + 1}.</strong> {p}
+                  <div key={i} className={styles.resultItem}>
+                    <span className={styles.resultNumber}>{i + 1}.</span> {p}
                   </div>
                 ))}
               </div>
             )}
+          </div>
+
+          <div className={styles.actions}>
+            <button className={styles.generateButton} onClick={handleGenerate}>Сгенерировать</button>
+            <button className={styles.clearButton} onClick={handleClear}>Очистить</button>
           </div>
         </>
       )}

@@ -1,10 +1,12 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import ReactFlow, {
   addEdge,
   applyNodeChanges,
   applyEdgeChanges,
   Background,
   Controls,
+  useReactFlow,
+  ReactFlowProvider,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -19,7 +21,7 @@ import VariantGenerator from '@components/VariantGenerator';
 
 import styles from './Canvas.module.css';
 
-const Canvas = () => {
+const CanvasContent = () => {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [paths, setPaths] = useState([]);
@@ -37,6 +39,9 @@ const Canvas = () => {
     y: 0,
     nodeId: null,
   });
+
+  const variantRef = useRef();
+  const { project, fitView } = useReactFlow();
 
   const nodeTypes = useMemo(
     () => ({
@@ -82,10 +87,11 @@ const Canvas = () => {
     if (!raw) return;
 
     const data = JSON.parse(raw);
-    const position = {
+
+    const position = project({
       x: event.clientX - bounds.left,
       y: event.clientY - bounds.top,
-    };
+    });
 
     const newNode = {
       id: String(Date.now()),
@@ -110,20 +116,11 @@ const Canvas = () => {
     };
 
     setNodes((nds) => nds.concat(newNode));
-  }, []);
+  }, [project]);
 
   const onDragOver = (event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleClearCanvas = () => {
-    if (window.confirm('Очистить весь холст?')) {
-      setNodes([]);
-      setEdges([]);
-      setRootNodeId(null);
-      setPaths([]);
-    }
   };
 
   const handleNodeAction = (action, nodeId) => {
@@ -185,96 +182,123 @@ const Canvas = () => {
       setEdgeContextMenu({ visible: false, x: 0, y: 0, edgeId: null });
     };
 
+    const handleClearCanvas = () => {
+      if (window.confirm('Очистить весь холст?')) {
+        setNodes([]);
+        setEdges([]);
+        setRootNodeId(null);
+        setPaths([]);
+      }
+    };
+
+    const handleGenerateVariants = () => {
+      if (variantRef.current) {
+        variantRef.current();
+      }
+    };
+
+    const handleFitView = () => {
+      fitView();
+    };
+
     window.addEventListener('click', closeMenus);
     window.addEventListener('edge-context', handleEdgeContext);
     window.addEventListener('edge-type-change', handleEdgeTypeChange);
     window.addEventListener('edge-delete', handleEdgeDelete);
+    window.addEventListener('clear-canvas', handleClearCanvas);
+    window.addEventListener('generate', handleGenerateVariants);
+    window.addEventListener('fit-view', handleFitView);
 
     return () => {
       window.removeEventListener('click', closeMenus);
       window.removeEventListener('edge-context', handleEdgeContext);
       window.removeEventListener('edge-type-change', handleEdgeTypeChange);
       window.removeEventListener('edge-delete', handleEdgeDelete);
+      window.removeEventListener('clear-canvas', handleClearCanvas);
+      window.removeEventListener('generate', handleGenerateVariants);
+      window.removeEventListener('fit-view', handleFitView);
     };
-  }, []);
+  }, [fitView]);
 
   return (
-    <div className={styles.canvas} onDrop={onDrop} onDragOver={onDragOver}>
-      <ReactFlow
-        key={nodes.length + edges.length}
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        fitView
-      >
-        <Background />
-        <Controls />
-      </ReactFlow>
+  <div className={styles.canvas} onDrop={onDrop} onDragOver={onDragOver}>
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
+    >
+      <Background />
+      <Controls />
+    </ReactFlow>
 
-      <VariantGenerator
-        nodes={nodes}
-        edges={edges}
-        rootId={rootNodeId || nodes[0]?.id}
-        onGenerate={setPaths}
-      />
+    <VariantGenerator
+      ref={variantRef}
+      nodes={nodes}
+      edges={edges}
+      rootId={rootNodeId || nodes[0]?.id}
+      onGenerate={setPaths}
+    />
 
-      <button className={styles.clearButton} onClick={handleClearCanvas}>
-        Очистить холст
-      </button>
-
-      <Sidebar
-        paths={paths}
-        nodes={nodes}
-        edges={edges}
-        rootId={rootNodeId}
-        onLoadTemplate={({ nodes: loadedNodes, edges, rootId }) => {
-          setNodes(
-            loadedNodes.map((node) => ({
-              ...node,
-              data: {
-                ...node.data,
-                onContext: (e, id) => {
-                  e.preventDefault();
-                  setNodeContextMenu({ x: e.clientX, y: e.clientY, nodeId: id });
-                },
+    <Sidebar
+      paths={paths}
+      nodes={nodes}
+      edges={edges}
+      rootId={rootNodeId}
+      onLoadTemplate={({ nodes: loadedNodes, edges, rootId }) => {
+        setNodes(
+          loadedNodes.map((node) => ({
+            ...node,
+            data: {
+              ...node.data,
+              onContext: (e, id) => {
+                e.preventDefault();
+                setNodeContextMenu({ x: e.clientX, y: e.clientY, nodeId: id });
               },
-            }))
-          );
-          setEdges(edges);
-          setRootNodeId(rootId);
-          setPaths([]);
-        }}
-        onDownload={() => {
-          const blob = new Blob([JSON.stringify(paths, null, 2)], {
-            type: 'application/json',
-          });
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = 'задачи.json';
-          link.click();
-        }}
-      />
+            },
+          }))
+        );
+        setEdges(edges);
+        setRootNodeId(rootId);
+        setPaths([]);
+        fitView();
+      }}
+      onDownload={() => {
+        const blob = new Blob([JSON.stringify(paths, null, 2)], {
+          type: 'application/json',
+        });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'задачи.json';
+        link.click();
+      }}
+    />
 
-      {edgeContextMenu.visible && (
-        <ContextMenu
-          x={edgeContextMenu.x}
-          y={edgeContextMenu.y}
-          id={edgeContextMenu.edgeId}
-        />
-      )}
-
-      <NodeContextMenu
-        x={nodeContextMenu.x}
-        y={nodeContextMenu.y}
-        nodeId={nodeContextMenu.nodeId}
-        onAction={handleNodeAction}
+    {edgeContextMenu.visible && (
+      <ContextMenu
+        x={edgeContextMenu.x}
+        y={edgeContextMenu.y}
+        id={edgeContextMenu.edgeId}
       />
-    </div>
-  );
+    )}
+
+    <NodeContextMenu
+      x={nodeContextMenu.x}
+      y={nodeContextMenu.y}
+      nodeId={nodeContextMenu.nodeId}
+      onAction={handleNodeAction}
+    />
+  </div>
+);
 };
+
+const Canvas = () => (
+  <ReactFlowProvider>
+    <CanvasContent />
+  </ReactFlowProvider>
+);
 
 export default Canvas;

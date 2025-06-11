@@ -4,66 +4,35 @@
   right: 0;
   width: 300px;
   height: 100vh;
-  background: #f8f9fb;
-  border-left: 1px solid #ccc;
-  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.04);
-  padding: 16px;
-  transition: all 0.3s ease;
+  background: #ffffff;
+  border-left: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
+  padding: 24px;
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.03);
   font-family: 'Segoe UI', sans-serif;
+  overflow-y: auto;
+  transition: all 0.3s ease;
   z-index: 1000;
 }
 
 .collapsed {
   width: 48px;
-  padding: 8px;
+  padding: 0;
   overflow: hidden;
-  align-items: center;
-}
-
-.collapseButton {
-  position: absolute;
-  top: 50%;
-  left: -12px;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 36px;
-  background: #cfc9f9;
-  color: #4b46c5;
-  border-radius: 6px 0 0 6px;
-  border: 1px solid #aaa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 1010;
-  transition: background 0.2s ease;
-}
-
-.collapseButton:hover {
-  background: #b9b2f2;
-}
-
-.icon {
-  transform: rotate(0deg);
-  transition: transform 0.3s ease;
-}
-
-.iconFlipped {
-  transform: rotate(180deg);
-  transition: transform 0.3s ease;
 }
 
 .section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.heading {
-  font-size: 15px;
+.sectionTitle {
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 8px;
-  color: #333;
+  color: #444;
+  margin-bottom: 12px;
 }
 
 .buttons {
@@ -72,111 +41,159 @@
 }
 
 .button {
-  background: #e2e6f0;
+  flex: 1;
+  background: #eef2f8;
   border: none;
   border-radius: 6px;
-  padding: 6px 10px;
+  padding: 8px;
   font-size: 13px;
-  cursor: pointer;
+  font-weight: 500;
   color: #333;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .button:hover {
-  background: #d0d4e2;
-}
-
-.templatePanel {
-  background: #f4f5fa;
-  border: 1px solid #d9dce5;
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  background: #dbe1ec;
 }
 
 .templateControls {
   display: flex;
   gap: 8px;
-  margin-bottom: 10px;
-}
-
-.templateSave {
-  background: #e2e6f0;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 13px;
-  cursor: pointer;
-  color: #333;
-  flex-shrink: 0;
-}
-
-.templateSave:hover {
-  background: #d0d4e2;
+  margin-bottom: 12px;
 }
 
 .input {
-  flex-grow: 1;
+  flex: 1;
   padding: 8px 10px;
-  background: #ffffff;
-  border: 1px solid #ccc;
+  background-color: #f9fafb;
+  border: 1px solid #dcdfe4 !important;
   border-radius: 6px;
-  font-size: 14px;
-  color: #2d2d2d;
+  font-size: 13px;
+  color: #111 !important;
+  font-weight: 500;
   outline: none;
-  transition: border 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
 }
 
 .input::placeholder {
-  color: #aaa;
+  color: #7a7a7a;
+  font-weight: 400;
 }
 
-.templateRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.template {
-  flex-grow: 1;
-  background: #ffffff;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 13px;
-  text-align: left;
-  cursor: pointer;
-}
-
-.template:hover {
-  background: #eef2ff;
-}
-
-.delete {
-  background: transparent;
+.save {
+  background: #4b46c5;
   border: none;
-  font-size: 16px;
-  color: #dc3545;
+  border-radius: 6px;
+  color: white;
+  padding: 8px 12px;
+  font-size: 14px;
   cursor: pointer;
-  padding: 0 6px;
 }
 
-.generated {
-  flex-grow: 1;
-  overflow-y: auto;
+.templates {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.pathItem {
+.templateRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.template {
+  flex: 1;
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 6px 8px;
   font-size: 13px;
   color: #333;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.template:hover {
+  background: #f0f4ff;
+}
+
+.delete {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #dc3545;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.generated {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  color: #222;
+}
+
+.generated > .resultItem + .resultItem {
+  border-top: 1px solid #eee;
+}
+
+.resultItem {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.resultNumber {
+  font-weight: 600;
+  color: #4b46c5;
 }
 
 .empty {
   font-style: italic;
   color: #888;
   font-size: 13px;
+}
+
+.actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+}
+
+
+.generateButton {
+  flex: 1;
+  background: #4b46c5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.generateButton:hover {
+  background: #3a35a0;
+}
+
+.clearButton {
+  flex: 1;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.clearButton:hover {
+  background: #b52d3c;
 }

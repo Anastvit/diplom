@@ -1,7 +1,6 @@
-import React from 'react';
-import styles from './VariantGenerator.module.css';
+import React, { forwardRef, useImperativeHandle } from 'react';
 
-const VariantGenerator = ({ nodes, edges, rootId, onGenerate }) => {
+const VariantGenerator = forwardRef(({ nodes, edges, rootId, onGenerate }, ref) => {
   const generateVariants = () => {
     if (!rootId) return;
 
@@ -110,13 +109,9 @@ const VariantGenerator = ({ nodes, edges, rootId, onGenerate }) => {
     onGenerate(results);
   };
 
-  return (
-    <div className={styles.wrapper}>
-      <button className={styles.button} onClick={generateVariants}>
-        Сгенерировать
-      </button>
-    </div>
-  );
-};
+  useImperativeHandle(ref, () => generateVariants);
+
+  return null;
+});
 
 export default VariantGenerator;
